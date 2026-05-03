@@ -90,6 +90,12 @@ fr_Float6:	equ $54
 fr_Injury:	equ $55
 fr_GetAir:	equ $56
 fr_Slide:	equ $57 ; formerly mamed fr_WaterSlide (was too long...)
+fr_Spindash1:	equ $58 ; Spindash Sprite Frame 1
+fr_Spindash2:	equ $59 ; Spindash Sprite Frame 2
+fr_Spindash3:	equ $5A ; Spindash Sprite Frame 3
+fr_Spindash4:	equ $5B ; Spindash Sprite Frame 1
+fr_Spindash5:	equ $5C ; Spindash Sprite Frame 2
+fr_Spindash6:	equ $5D ; Spindash Sprite Frame 3
 
 
 ; ---------------------------------------------------------------------------
@@ -136,6 +142,7 @@ id_Slide:	sonani	SonAni_Slide	; $1B
 id_Null:	sonani	SonAni_Null	; $1C
 id_Float3:	sonani	SonAni_Float3	; $1D
 id_Float4:	sonani	SonAni_Float4	; $1E
+id_Spindash:	sonani	SonAni_Spindash	; $1F
 
 ; ---------------------------------------------------------------------------
 ; --- Special animations (walk/run/roll/push) ---
@@ -308,8 +315,14 @@ SonAni_Float3:	dc.b 3
 		dc.b fr_Float1, fr_Float2, fr_Float5, fr_Float3, fr_Float6
 		dc.b afEnd
 		even
-
+		
 SonAni_Float4:	dc.b 3
 		dc.b fr_Float1
 		dc.b afChange, id_Walk
+		even
+
+SonAni_Spindash:	dc.b 0
+		dc.b fr_Spindash1, fr_Spindash2, fr_Spindash1, fr_Spindash3, fr_Spindash1
+		dc.b fr_Spindash4, fr_Spindash1, fr_Spindash5, fr_Spindash1, fr_Spindash6
+		dc.b afEnd
 		even

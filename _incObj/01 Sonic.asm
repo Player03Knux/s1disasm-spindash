@@ -1224,8 +1224,6 @@ Sonic_JumpHeight:
 ; Subroutine to check for starting to charge a spindash
 ; ---------------------------------------------------------------------------
 
-AniIDSonAni_Spindash: equ id_Roll
-
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 ; loc_1AC3E:
@@ -1237,7 +1235,7 @@ Sonic_CheckSpindash:
 	move.b	(v_jpadpress2).w,d0
 	andi.b	#btnABC,d0
 	beq.w	return_1AC8C
-	move.b	#AniIDSonAni_Spindash,obAnim(a0)
+	move.b	#id_Spindash,obAnim(a0)
 ;	move.w	#SndID_SpindashRev,d0
 ;	jsr	(PlaySound).l
 	addq.l	#4,sp
@@ -1340,7 +1338,7 @@ Sonic_ChargingSpindash:			; If still charging the dash...
 	move.b	(v_jpadpress2).w,d0
 	andi.b	#btnABC,d0
 	beq.w	Sonic_Spindash_ResetScr
-	move.w	#(AniIDSonAni_Spindash<<8)|(id_Walk<<0),obAnim(a0)
+	move.w	#(id_Spindash<<8)|(id_Walk<<0),obAnim(a0)
 ;	move.w	#SndID_SpindashRev,d0
 ;	jsr	(PlaySound).l
 	addi.w	#$200,spindash_counter(a0)
