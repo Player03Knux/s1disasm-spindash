@@ -17,17 +17,17 @@ Revision = 1
 ; 	| If 2, build the hacked version from Sonic Mega Collection, dubbed REVXB,
 ;	|       which (sloppily) fixes the infamous "spike bug" -- not recommended
 
-FixBugs = 0
+FixBugs = 1
 ;	| If 1, enables various bugfixes across the game and sound driver
 ;	| See also FixMusicAndSFXDataBugs
 
-AllOptimizations = 0
+AllOptimizations = 1
 ;	| If 1, enables all optimizations
-SkipChecksumCheck = 0|AllOptimizations
+SkipChecksumCheck = 1|AllOptimizations
 ;	| If 1, disables the slow bootup checksum calculation
-ZeroOffsetOptimization = 0|AllOptimizations
+ZeroOffsetOptimization = 1|AllOptimizations
 ;	| If 1, makes a handful of zero-offset instructions smaller
-PaddingOptimization = 0|AllOptimizations
+PaddingOptimization = 1|AllOptimizations
 ;	| If 1, removes about 3 KB of various superfluous padding
 
 EnableSRAM = 0
