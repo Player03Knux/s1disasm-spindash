@@ -386,6 +386,7 @@ GameInit:
 		move.l	d7,(a6)+
 		dbf	d6,.clearRAM	; clear RAM ($0000-$FDFF)
 
+		jsr	(InitDMAQueue).l
 		bsr.w	VDPSetupGame
 		bsr.w	DACDriverLoad
 		bsr.w	JoypadInit
@@ -633,7 +634,7 @@ VBlank:
 		movem.l	d0-a6,-(sp)			; backup all registers except stack pointer (a7)
 
 		tst.b	(v_vblank_routine).w		; was a VBlank routine set?
-		beq.s	VBlank_Lag			; if not, this is a lag frame, branch
+		beq.w	VBlank_Lag			; if not, this is a lag frame, branch
 
 		move.w	(vdp_control_port).l,d0		; clear write-pending flag in VDP (prevents issues if 68k was reset while writing a command to VDP)
 		move.l	#$40000010,(vdp_control_port).l	; set VDP to VSRAM write mode
@@ -660,6 +661,14 @@ VBlank_Music:
 		jsr	(UpdateMusic).l			; run sound driver to advance music
 
 VBlank_Exit:
+		cmpi.w	#VDP_Command_Buffer,(VDP_Command_Buffer_Slot).w ; is DMA queue empty?
+		beq.s	.dmaDone			; if yes, branch (nothing to do)
+		stopZ80					; need to stop Z80 for DMA transfers
+		waitZ80					; wait until it's stopped
+		jsr	ProcessDMAQueue(pc)		; do all queued DMA transfers now
+		startZ80				; restart Z80
+
+.dmaDone:
 		addq.l	#1,(v_vblank_count).w		; increment VBlank counter
 		movem.l	(sp)+,d0-a6			; restore all backed-up registers
 		rte					; return from interrupt and resume normal operation
@@ -808,13 +817,6 @@ VBlank_Levels:
 
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		writeVRAM	v_spritetablebuffer,vram_sprites
-
-		tst.b	(f_sonframechg).w		; has Sonic's sprite changed?
-		beq.s	.nochg				; if not, branch
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
 		startZ80
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -867,13 +869,6 @@ VBlank_SpecialStage:
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		startZ80
 		bsr.w	PalCycle_SS
-
-		tst.b	(f_sonframechg).w		; has Sonic's sprite changed?
-		beq.s	.nochg				; if not, branch
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
 		tst.w	(v_generictimer).w		; is there time left on the demo?
 		beq.w	.end				; if not, return
 		subq.w	#1,(v_generictimer).w		; subtract 1 from time left in demo
@@ -905,13 +900,6 @@ VBlank_Ending:
 		move.w	(v_hblank_hreg).w,(a5)
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		writeVRAM	v_spritetablebuffer,vram_sprites
-
-		tst.b	(f_sonframechg).w
-		beq.s	.nochg
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
 		startZ80
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -961,13 +949,6 @@ VBlank_Continue:
 		writeVRAM	v_spritetablebuffer,vram_sprites
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		startZ80
-
-		tst.b	(f_sonframechg).w
-		beq.s	.nochg
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
 		tst.w	(v_generictimer).w
 		beq.w	.end
 		subq.w	#1,(v_generictimer).w
@@ -1160,6 +1141,47 @@ VDPSetupArray:
 		dc.w $9200				; window vertical position
 VDPSetupArray_End:
 
+		include	"_inc/DMA-Queue.asm"
+		
+; ---------------------------------------------------------------------------
+; Load a Dynamic Pattern Load Cues request into the DMA queue.
+; ---------------------------------------------------------------------------
+; Input:
+;	d0.b = frame number
+;	d4.w = starting target VRAM tile address
+;	d6.l = pointer to uncompressed art
+;	a2   = pointer to DPLC table
+; ---------------------------------------------------------------------------
+
+LoadDynPLC:
+		andi.w	#$FF,d0			; mask out anything except the input frame
+		add.w	d0,d0			; double ID (for word-based indexing)
+		adda.w	(a2,d0.w),a2		; find current DPLC entry
+		moveq	#0,d5			; clear d5
+		move.b	(a2)+,d5		; get number of tasks in this DPLC entry
+		subq.w	#1,d5			; subtract 1 from number of tasks (will be the loop count)
+		bmi.w	.end			; if it underflowed, this is an empty entry, nothing to do
+		
+	.loop:
+		move.b	(a2)+,d3		; get first byte of DPLC task
+		move.b	d3,-(sp)		; move it to stack (bytes shift sp by 2)
+		moveq	#0,d1			; clear d1
+		move.w	(sp)+,d1		; move it from stack to upper byte of d1
+		move.b	(a2)+,d1		; get second byte of DPLC task
+		andi.w	#$F0,d3			; only look at upper nybble of first byte
+		addi.w	#$10,d3			; add 1 to that nybble
+		andi.w	#$FFF,d1		; mask out that nybble in the other part
+		lsl.l	#5,d1			; multiply by $20 (tile_size)
+		add.l	d6,d1			; add art location
+		move.w	d4,d2			; set target VRAM location
+		add.w	d3,d4			; advance VRAM pointer
+		add.w	d3,d4			; (twice, for word-based tiles)
+		bsr.w	QueueDMATransfer	; load DMA request into queue (also known as "DMA_68KtoVRAM")
+		dbf	d5,.loop		; repeat for number of entries
+		
+	.end:
+		rts				; return
+; End of function LoadDynPLC
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -1188,7 +1210,7 @@ ClearScreen:
 		clearRAM v_spritetablebuffer,v_spritetablebuffer_end+4 ; clear sprite table buffer
 		clearRAM v_hscrolltablebuffer,v_hscrolltablebuffer_end_padded+4 ; clear H-Scroll table buffer
 	endif
-
+		ResetDMAQueue
 		rts
 ; End of function ClearScreen
 
