@@ -57,6 +57,7 @@ v_gameovertext1:equ	v_objspace+object_size*2	; object variable space for the "GA
 v_gameovertext2:equ	v_objspace+object_size*3	; object variable space for the "OVER" in "GAME OVER"/"TIME OVER" text ($40 bytes)
 
 v_shieldobj:	equ	v_objspace+object_size*6	; object variable space for the shield ($40 bytes)
+v_dustobj	equ v_objspace+object_size*7	; object variable space for the Spin Dash dust ($40 bytes)
 v_starsobj1:	equ	v_objspace+object_size*8	; object variable space for the invincibility stars #1 ($40 bytes)
 v_starsobj2:	equ	v_objspace+object_size*9	; object variable space for the invincibility stars #2 ($40 bytes)
 v_starsobj3:	equ	v_objspace+object_size*10	; object variable space for the invincibility stars #3 ($40 bytes)

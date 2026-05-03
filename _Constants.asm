@@ -482,7 +482,8 @@ ArtTile_Monitor:		equ $680
 ArtTile_HUD:			equ $6CA
 ArtTile_Sonic:			equ $780
 ArtTile_Points:			equ $797
-ArtTile_Lamppost:		equ $7A0
+ArtTile_Lamppost:		equ ($D800/$20) ; =$6C0 (changed from $7A0 to make room for the Spin Dash dust)
+ArtTile_SpinDust:              equ ($F400/$20) ; = $7A0
 ArtTile_Ring:			equ $7B2
 ArtTile_Lives_Counter:		equ $7D4
 

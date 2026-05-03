@@ -38,6 +38,7 @@ Sonic_Main:	; Routine 0
 		move.w	#$600,(v_sonspeedmax).w			; set Sonic's top speed
 		move.w	#$C,(v_sonspeedacc).w			; set Sonic's acceleration
 		move.w	#$80,(v_sonspeeddec).w			; set Sonic's deceleration
+		move.b	#id_SpinDust,(v_dustobj).w		; prepare Spin Dash dust object
 ; ---------------------------------------------------------------------------
 
 ; Obj01_Control:
@@ -1296,7 +1297,7 @@ Sonic_UpdateSpindash:
 	
 .undefined1:
 	bset	#2,obStatus(a0)
-;	move.b	#0,(Sonic_Dust+anim).w
+	move.b	#0,(id_SpinDust+obAnim).w
 ;	move.w	#SndID_SpindashRelease,d0	; spindash zoom sound
 ;	jsr	(PlaySound).l
 	bra.s	Sonic_Spindash_ResetScr

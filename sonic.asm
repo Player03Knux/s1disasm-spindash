@@ -4284,6 +4284,9 @@ Map_WFall:	include	"_maps/Waterfalls.asm"
 
 ; ===========================================================================
 ; >>> Main Sonic player object
+		include	"_incObj/05 SpinDust.asm"
+		include	"_maps/SpinDust.asm"
+		include	"_maps/SpinDust - Dynamic Gfx Script.asm"
 		include	"_incObj/01 Sonic.asm"
 
 
@@ -4497,6 +4500,8 @@ Map_Sonic:	include	"_maps/Sonic.asm"
 SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
 
 Art_Sonic:	binclude	"artunc/Sonic.bin"	; Sonic
+		even
+Art_SpinDust:	binclude	"artunc/SpinDust.bin"
 		even
 
 ; ---------------------------------------------------------------------------
