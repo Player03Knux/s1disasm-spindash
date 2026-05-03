@@ -1298,8 +1298,8 @@ Sonic_UpdateSpindash:
 .undefined1:
 	bset	#2,obStatus(a0)
 	move.b	#0,(id_SpinDust+obAnim).w
-;	move.w	#SndID_SpindashRelease,d0	; spindash zoom sound
-;	jsr	(PlaySound).l
+	move.w	#sfx_SpinDashRelease,d0	; spindash zoom sound
+	jsr	(QueueSound2).l
 	bra.s	Sonic_Spindash_ResetScr
 ; ===========================================================================
 ; word_1AD0C:
@@ -1340,8 +1340,8 @@ Sonic_ChargingSpindash:			; If still charging the dash...
 	andi.b	#btnABC,d0
 	beq.w	Sonic_Spindash_ResetScr
 	move.w	#(id_Spindash<<8)|(id_Walk<<0),obAnim(a0)
-;	move.w	#SndID_SpindashRev,d0
-;	jsr	(PlaySound).l
+	move.w	#sfx_SpinDash,d0
+	jsr	(QueueSound2).l
 	addi.w	#$200,spindash_counter(a0)
 	cmpi.w	#$800,spindash_counter(a0)
 	blo.s	Sonic_Spindash_ResetScr

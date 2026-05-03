@@ -312,6 +312,16 @@ spec__First:	equ $D0
 sfx_Waterfall:	equ ((ptr_sndD0-SpecSoundIndex)/4)+spec__First
 spec__Last:	equ ((ptr_specend-SpecSoundIndex-4)/4)+spec__First
 
+; Extra sound effects
+ext__First:	equ $D1
+sfx_SpinDash:	equ ((ptr_sndD1-ExtSoundIndex)/4)+ext__First
+ext__Last:	equ ((ptr_extend-ExtSoundIndex-4)/4)+ext__First
+
+; Extra sound effects
+ext2__First:	equ $D2
+sfx_SpinDashRelease:	equ ((ptr_sndD2-ExtSoundIndex)/4)+ext__First
+ext2__Last:	equ ((ptr_extend-ExtSoundIndex-4)/4)+ext__First
+
 flg__First:	equ $E0
 bgm_Fade:	equ ((ptr_flgE0-Sound_ExIndex)/4)+flg__First
 sfx_Sega:	equ ((ptr_flgE1-Sound_ExIndex)/4)+flg__First
