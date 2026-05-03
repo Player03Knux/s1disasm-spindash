@@ -178,8 +178,9 @@ shoetime:	equ $34	; time left for speed shoes (2 bytes)
 angleright:	equ $36	; angle of floor on Sonic's right side
 angleleft:	equ $37	; angle of floor on Sonic's left side
 sticktoconvex:	equ $38	; flag set while running on an SBZ gear
-;unused:	equ $39	; unused by Sonic
-restartime:	equ $3A	; time left before level restarts after dying (2 bytes)
+spindash_flag equ $39 ; 0 for normal, 1 for charging a spindash or forced rolling
+spindash_counter equ $3A ; and $3B
+restartime:	equ spindash_counter	; time left before level restarts after dying (2 bytes)
 jumping:	equ $3C	; flag set while Sonic is jumping
 standonobject:	equ $3D	; object index Sonic stands on
 locktime:	equ $3E	; temporary D-Pad control lock timer (2 bytes)
