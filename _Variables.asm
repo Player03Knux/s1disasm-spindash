@@ -285,7 +285,11 @@ v_ringbonus:		ds.w	1		; ring bonus at the end of an act
 f_endactbonus:		ds.b	1		; time/ring bonus update flag at the end of an act
 v_sonicend:		ds.b	1		; routine counter for Sonic in the ending sequence
 v_lz_deform:		ds.w	1		; LZ deformation offset, in units of $80
-			ds.b	6		; unused
+Horiz_scroll_delay_val:		ds.w	1	; if its value is a, where a != 0, X scrolling will be based on the player's X position a-1 frames ago
+			ds.b	1		; unused
+			ds.b	1		; unused
+			ds.b	1		; unused
+			ds.b	1		; unused
 f_switch:		ds.b	$10		; flags set when Sonic stands on a switch
 v_scroll_block_1_size:	ds.w	1
 v_scroll_block_2_size:	ds.w	1		; unused
