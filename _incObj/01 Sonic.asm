@@ -434,6 +434,10 @@ Sonic_LookUp:
 		btst	#bitUp,(v_jpadhold2).w			; is up being held?
 		beq.s	Sonic_Duck				; if not, check for ducking instead
 		move.b	#id_LookUp,obAnim(a0)			; use "looking up" animation
+		addq.b	#1,(v_cam_y_delay).w			; add 1 to camera Y delay
+		cmpi.b	#120,(v_cam_y_delay).w			; did we reach target wait time of 120 frames (2 seconds)?
+		blo.s	Sonic_ResetScr_Part2			; if not, branch
+		move.b	#120,(v_cam_y_delay).w			; cap wait time
 		cmpi.w	#$C8,(v_lookshift).w			; has camera already fully moved up?
 		beq.s	Sonic_CheckDpadLetGo			; if yes, don't move it up further
 		addq.w	#2,(v_lookshift).w			; move camera up further
@@ -445,6 +449,10 @@ Sonic_Duck:
 		btst	#bitDn,(v_jpadhold2).w			; is down being held?
 		beq.s	Sonic_ResetScr				; if not, branch
 		move.b	#id_Duck,obAnim(a0)			; use "ducking" animation
+		addq.b	#1,(v_cam_y_delay).w			; add 1 to camera Y delay
+		cmpi.b	#120,(v_cam_y_delay).w			; did we reach target wait time of 120 frames (2 seconds)?
+		blo.s	Sonic_ResetScr_Part2			; if not, branch
+		move.b	#120,(v_cam_y_delay).w			; cap wait time
 		cmpi.w	#8,(v_lookshift).w			; has camera already fully moved down?
 		beq.s	Sonic_CheckDpadLetGo			; if yes, branch
 		subq.w	#2,(v_lookshift).w			; move camera down further
@@ -453,6 +461,9 @@ Sonic_Duck:
 
 ; Obj01_ResetScr:
 Sonic_ResetScr:
+		clr.b	(v_cam_y_delay).w			; reset camera Y delay timer
+
+Sonic_ResetScr_Part2:
 		cmpi.w	#$60,(v_lookshift).w			; is screen in its default position?
 		beq.s	Sonic_CheckDpadLetGo			; if yes, branch
 		bcc.s	.resetdown				; does camera need to go back down? if yes, branch
@@ -597,6 +608,9 @@ Sonic_MoveLeft:
 		neg.w	d1					; negate it for left-side check
 		cmp.w	d1,d0					; is new speed above max speed?
 		bgt.s	.nocap					; if not, branch
+		add.w	d5,d0	; remove this frame's acceleration change
+		cmp.w	d1,d0	; compare speed with top speed
+		ble.s	.nocap	; if speed was already greater than the maximum, branch
 		move.w	d1,d0					; cap Sonic's ground speed
 
 ; loc_130A6:
@@ -650,6 +664,9 @@ Sonic_MoveRight:
 		add.w	d5,d0					; add acceleration to current ground speed
 		cmp.w	d6,d0					; is new speed above max speed?
 		blt.s	.nocap					; if not, branch
+		sub.w	d5,d0	; remove this frame's acceleration change
+		cmp.w	d6,d0	; compare speed with top speed
+		bge.s	.nocap	; if speed was already greater than the maximum, branch
 		move.w	d6,d0					; cap Sonic's ground speed
 
 ; loc_1310C:
@@ -755,6 +772,16 @@ Sonic_RollSlowdownDone:
 
 ; loc_131CC:
 Sonic_AngledRollSpeed:
+ 		cmpi.w	#$60,(v_lookshift).w			; is vertical camera shift already at base value?
+		beq.s	.y_cam_reset_end			; if yes, branch
+		bhs.s	.y_cam_pull_up				; is camera offset downwards? if yes, branch
+		addq.w	#2,(v_lookshift).w			; pull camera back down
+		bra.s	.y_cam_reset_end			; branch over
+
+	.y_cam_pull_up:
+		subq.w	#2,(v_lookshift).w			; pull camera back up
+
+	.y_cam_reset_end:
 		move.b	obAngle(a0),d0				; get Sonic's current angle in relation to the floor
 		jsr	(CalcSine).l				; get sine and cosine values for the angle
 		muls.w	obInertia(a0),d0			; multiply angle sine by ground speed
@@ -1237,15 +1264,11 @@ Sonic_CheckSpindash:
 	andi.b	#btnABC,d0
 	beq.w	return_1AC8C
 	move.b	#id_Spindash,obAnim(a0)
-;	move.w	#SndID_SpindashRev,d0
-;	jsr	(PlaySound).l
+	move.w	#sfx_SpinDash,d0
+	jsr	(QueueSound2).l
 	addq.l	#4,sp
 	move.b	#1,spindash_flag(a0)
 	move.w	#0,spindash_counter(a0)
-;	cmpi.b	#12,air_left(a0)	; if he's drowning, branch to not make dust
-;	blo.s	+
-;	move.b	#2,(Sonic_Dust+anim).w
-;+
 	bsr.w	Sonic_LevelBound
 	bsr.w	Sonic_AnglePos
 
@@ -1276,10 +1299,6 @@ Sonic_UpdateSpindash:
 	move.b	spindash_counter(a0),d0
 	add.w	d0,d0
 	move.w	SpindashSpeeds(pc,d0.w),obInertia(a0)
-;	tst.b	(Super_Sonic_flag).w
-;	beq.s	+
-;	move.w	SpindashSpeedsSuper(pc,d0.w),obInertia(a0)
-;+
 	; Determine how long to lag the camera for.
 	; Notably, the faster Sonic goes, the less the camera lags.
 	; This is seemingly to prevent Sonic from going off-screen.
@@ -1289,7 +1308,7 @@ Sonic_UpdateSpindash:
 	andi.w	#$1F00,d0 ; This line is not necessary, as none of the removed bits are ever set in the first place
 	neg.w	d0
 	addi.w	#$2000,d0
-	move.w	d0,(Horiz_scroll_delay_val).w
+	move.w	d0,(v_cam_x_delay).w
 
 	btst	#0,obStatus(a0)
 	beq.s	.undefined1
