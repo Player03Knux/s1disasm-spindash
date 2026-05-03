@@ -1,7 +1,7 @@
 {
     "Flex": 2,
     "name": "Sonic 1",
-    "node": "5199fe1a-b581-4c21-9771-6849c6348f9d",
+    "node": "da472ab9-f363-45e6-8ee3-a83fd70d6d9c",
     "objects": [
         {
             "name": "Mapless Objects",
@@ -657,7 +657,7 @@
                             "length": 1
                         }
                     ],
-                    "format": "Sonic 2.js",
+                    "format": "Sonic 1.js",
                     "art": {
                         "path": "../artunc/Sonic.bin",
                         "compression": "Uncompressed",
@@ -1238,7 +1238,7 @@
                 }
             ],
             "isDirectory": true,
-            "expanded": false,
+            "expanded": true,
             "uuid": "14da472a-b9f3-4355-a6ce-e3a83fd70d6d"
         },
         {
